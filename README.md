@@ -126,7 +126,3 @@ Run the closed-loop simulator:
 | **Infineon AURIX TC3xx** | `GTM_TOM` / `ATOM` | EVADC Trigger Request Unit | Automotive Powertrain VCUs |
 
 ---
-
-## License
-
-This project is open-source under the [MIT License](https://www.google.com/search?q=LICENSE&utm_source=gemini).
