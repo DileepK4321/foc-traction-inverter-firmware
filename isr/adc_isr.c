@@ -11,12 +11,21 @@ void FOC_System_Init(FOC_Controller_t *foc, EPWM_Driver_t *pwm_driver, float v_d
     float max_voltage = v_dc * 0.57735f;
     PI_Init(&foc->pi_d, 1.2f, 0.05f, max_voltage);
     PI_Init(&foc->pi_q, 1.2f, 0.05f, max_voltage);
+
+    // Initialize Level 2 Safety Monitor (Max 30A, 250V-450V, 3-tick debounce)
+    ISO26262_Init(&foc->safety_monitor, 30.0f, 450.0f, 250.0f, 3);
 }
 
 // Simulated High-Priority Hardware Interrupt Handler
 void ADC_ePWM_ISR_Handler(FOC_Controller_t *foc) {
     // 1. Read phase currents & angle (Simulated from hardware registers)
     PhaseCurrents_t i_abc = foc->measured_currents;
+
+    FaultStatus_t fault = ISO26262_Check_Safety_Limits(&foc->safety_monitor, i_abc, foc->v_dc_bus, foc->pwm_driver);
+    if (fault != FAULT_NONE) {
+        // Abort control pipeline execution if system is in fault state
+        return;
+    }
     float angle = foc->rotor_angle_rad;
 
     // 2. Forward Clarke & Park Transforms
